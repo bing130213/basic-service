@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: basic service
+  profiles:
+    active: dev
