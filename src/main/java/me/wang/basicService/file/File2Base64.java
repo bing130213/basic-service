@@ -1,9 +1,11 @@
 package me.wang.basicService.file;
 
+import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.util.Base64Utils;
 
 import java.io.*;
 import java.util.Base64;
@@ -12,41 +14,58 @@ import java.util.Base64;
  * @author wangbing
  * @date 2021/1/7
  */
-
+@Slf4j
 public class File2Base64 {
     public final ResourceLoader resourceLoader = new DefaultResourceLoader();
 
     /**
-     * 文件转base64字符串
-     * @param file
+     * <p>将文件转成base64 字符串</p>
+     * @param path 文件路径
      * @return
+     * @throws Exception
      */
-    public static String fileToBase64(File file) {
-        String base64 = null;
-        InputStream in = null;
-        try {
-            in = new FileInputStream(file);
-            byte[] bytes = new byte[in.available()];
-            int length = in.read(bytes);
-            base64 = Base64.encodeToString(bytes, 0, length, Base64.);
-        } catch (FileNotFoundException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } finally {
+        public static String encodeBase64File(String path) throws Exception {
+            File file = new File(path);
+            FileInputStream inputFile = new FileInputStream(file);
+            byte[] buffer = new byte[(int)file.length()];
+            inputFile.read(buffer);
+            inputFile.close();
+            return Base64Utils.encodeToString(buffer);
+        }
+        /**
+         * <p>将base64字符解码保存文件</p>
+         * @param base64Code
+         * @param targetPath
+         * @throws Exception
+         */
+        public static void decoderBase64File(String base64Code,String targetPath) throws Exception {
+            byte[] buffer = Base64Utils.decodeFromString(base64Code);
+            FileOutputStream out = new FileOutputStream(targetPath);
+            out.write(buffer);
+            out.close();
+        }
+        /**
+         * <p>将base64字符保存文本文件</p>
+         * @param base64Code
+         * @param targetPath
+         * @throws Exception
+         */
+        public static void toFile(String base64Code,String targetPath) throws Exception {
+            byte[] buffer = base64Code.getBytes();
+            FileOutputStream out = new FileOutputStream(targetPath);
+            out.write(buffer);
+            out.close();
+        }
+        public static void main(String[] args) {
             try {
-                if (in != null) {
-                    in.close();
-                }
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
+                String base64Code =encodeBase64File(".//repos//myfile.txt");
+                System.out.println(base64Code);
+                decoderBase64File(base64Code, "./repos/myfile_new.txt");
+                toFile(base64Code, "./repos/myfile_local.txt");
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-        return base64;
-    }
 
     /**
      * base64字符串转文件
@@ -55,14 +74,14 @@ public class File2Base64 {
      */
     public static File base64ToFile(String base64) {
         File file = null;
-        String fileName = "/Petssions/record/testFile.amr";
+        String fileName = "/repos/myfile.txt";
         FileOutputStream out = null;
         try {
             // 解码，然后将字节转换为文件
-            file = new File(Environment.getExternalStorageDirectory(), fileName);
+            file = new File(fileName);
             if (!file.exists())
                 file.createNewFile();
-            byte[] bytes = Base64.decode(base64, Base64.DEFAULT);// 将字符串转换为byte数组
+            byte[] bytes = Base64Utils.decodeFromString(base64); // 将字符串转换为byte数组
             ByteArrayInputStream in = new ByteArrayInputStream(bytes);
             byte[] buffer = new byte[1024];
             out = new FileOutputStream(file);
@@ -73,15 +92,14 @@ public class File2Base64 {
                 out.write(buffer, 0, byteread); // 文件写操作
             }
         } catch (IOException ioe) {
-            ioe.printStackTrace();
+            log.error("error -> {}", ioe.getMessage());
         } finally {
             try {
                 if (out!= null) {
                     out.close();
                 }
             } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                log.error("error -> {}", e.getMessage());
             }
         }
         return file;

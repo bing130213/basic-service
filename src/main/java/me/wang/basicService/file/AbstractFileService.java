@@ -4,6 +4,8 @@ import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.codec.multipart.FilePart;
 
+import java.awt.image.DataBuffer;
+
 /**
  * @author wangbing
  * @date 2021/1/8
@@ -17,6 +19,11 @@ public class AbstractFileService implements FileService {
     public void upload(FilePart filePart) {
         String fileName = filePart.filename();
         String mediaType = filePart.headers().getContentType().toString();
+
+    }
+
+    @Override
+    public void singleFileUpload(String fileName, String mediaType, DataBuffer dataBuffer) {
 
     }
 
